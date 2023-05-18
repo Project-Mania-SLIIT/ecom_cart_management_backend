@@ -1,10 +1,11 @@
-const Cart = require('../model/cart').default;
+const Cart = require('../model/cart');
 const asyncHandler = require('express-async-handler')
+const Product = require('../model/product')
 
 //Create new shopping cart
 const createCart = asyncHandler(async (req, res) => {
     const { userId, products } = req.body;
-    try {
+    // try {
       const existingCart = await Cart.findOne({ userId: userId });
   
       if (existingCart) {
@@ -19,25 +20,31 @@ const createCart = asyncHandler(async (req, res) => {
         const savedCart = await newCart.save();
         res.status(201).json(savedCart);
       }
-    } catch (err) {
-      console.log(err);
-      res.status(500).json(err);
-    }
+
   });
   
   //Get shopping cart by user id
   const getCartByUserId = asyncHandler(async (req, res) => {
     try {
-      const cart = await Cart.findOne({ userId: req.params.userId }).populate(
-        "products.product"
-      );
-  
+      // Get cart by userId
+      const cart = await Cart.findOne({ userId: req.params.userId });
+      // check if cart exists
       if (cart) {
-        res.status(200).json(cart);
+        // Get products in the cart
+        const products = await Promise.all(
+          cart.products.map(async (item) => {
+            const product = await Product.findById(item.product);
+            return { product, quantity: item.quantity };
+          })
+        );
+        // Return cart and products
+        res.status(200).json({ ...cart.toJSON(), products });
       } else {
+        // If cart doesn't exist, return error
         res.status(404).json({ message: "Cart not found" });
       }
     } catch (err) {
+      // Return any server error
       res.status(500).json(err);
     }
   });
