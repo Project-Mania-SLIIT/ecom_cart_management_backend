@@ -76,9 +76,12 @@ const createCart = asyncHandler(async (req, res) => {
   //Delete shopping cart
   const deleteCart = asyncHandler(async (req, res) => {
     try {
+      // Find cart by userId and delete
       const cart = await Cart.findOne({ userId: req.params.userId });
+      // Check if cart exists
       if (cart) {
-        await cart.delete();
+        await cart.deleteOne();
+        console.log(cart)
         res.status(200).json({ message: "Cart deleted successfully" });
       } else {
         res.status(404).json({ message: "Cart not found" });
@@ -110,17 +113,16 @@ const createCart = asyncHandler(async (req, res) => {
   const getTotalPrice = asyncHandler(async (req, res) => {
     try {
       const cart = await Cart.findOne({ userId: req.params.userId })
-        .populate("userId", "name")
-        .populate("products.product", "pPrice");
-  
+        // .populate("userId", "name")
+        .populate("products.product", "price");
       if (cart) {
         let totalPrice = 0;
         cart.products.forEach((item) => {
-          if (item.product.pPrice) {
-            totalPrice += item.product.pPrice * item.quantity;
+          if (item.product && item.product.price) {
+            totalPrice += item.product.price * item.quantity;
           }
         });
-        console.log(totalPrice);
+        // console.log(totalPrice);
         res.status(200).json({ totalPrice });
       } else {
         res.status(404).json({ message: "Cart not found" });
@@ -129,6 +131,7 @@ const createCart = asyncHandler(async (req, res) => {
       res.status(500).json(err);
     }
   });
+  
   
   //Get the count of products in the cart
   const getCartCount = asyncHandler(async (req, res) => {
