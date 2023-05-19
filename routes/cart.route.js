@@ -1,5 +1,4 @@
 const express = require('express');
-import { buyerProtect, protect } from "../middleware/auth.js";
 const {
   createCart,
   getCartByUserId,
@@ -8,20 +7,21 @@ const {
   deleteProductFromCart,
   getTotalPrice,
   getCartCount,
-} = require("../controllers/cart.controller");
+} = require("../controller/cart.controller");
 const cartRouter = express.Router();
 
-cartRouter.route("/").post(protect, createCart);
+cartRouter.route("/").post(createCart);
 cartRouter
   .route("/:userId")
-  .get(protectUser, getCartByUserId)
-  .put(protectUser, updateCart)
-  .delete(protectUser, deleteCart);
-cartRouter.route('/:userId/:productId').delete(protectUser, deleteProductFromCart);
+  .get(getCartByUserId)
+  .put(updateCart)
+  .delete(deleteCart);
+cartRouter.route('/:userId/:productId').delete(deleteProductFromCart);
 // cartRouter.route('/:userId/:productId/').put(protect, updateProductQuantity);
-cartRouter.route('/getTotalPrice/:userId').get(protectUser,buyerProtect, getTotalPrice);
+cartRouter.route('/getTotalPrice/:userId').get(getTotalPrice);
 cartRouter
   .route("/getCartCount/:userId")
-  .get(protectUser, buyerProtect, getCartCount);
+  .get(getCartCount);
 
-export default cartRouter;
+module.exports = cartRouter;
+// export default ;
